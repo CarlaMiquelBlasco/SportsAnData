@@ -40,6 +40,14 @@ def main():
             #if stored
             if st.session_state.username != None:
                 st.markdown(f'<p style="text-align: left;color:#006400; font-size:15px; border-radius:2%;">Successfully Log in as {st.session_state.username}</p>', unsafe_allow_html=True)
+    
+    with st.sidebar:
+        st.write('-'*50)
+        with open("Documentation/User_Manual.pdf", 'rb') as f:
+            data = f.read()
+        if st.button(':page_facing_up: Download User Manual'):
+            tmp_download_link = create_download_link(data, "Documentation/User_Manual.pdf")
+            st.markdown(tmp_download_link, unsafe_allow_html=True)
 
     if 'username' not in st.session_state or st.session_state.username == None:
         with st.columns(3)[0]:
@@ -71,7 +79,7 @@ def main():
             ## LET THE USER UPLOAD THEIR DATA
             col1, mid, col2 = st.columns((2,0.3, 3))
             with col1:
-                type = st.selectbox('type_watch', ['Select type of Smart Watch','Garmin Fenix S6', 'Garmin Forerunner', 'Other'], label_visibility="collapsed")
+                type = st.selectbox('type_watch', ['Select type of Smart Watch','Garmin Fenix S6', 'Garmin Forerunner', 'Garmin Vivoactive S4', 'Other'], label_visibility="collapsed")
                 uploadedFile = st.file_uploader('uploadedFile', type=['csv','xlsx'],accept_multiple_files=False,key="uploadedFile", label_visibility = "collapsed")
             with col2:
                 with open("Data/RequirementsData.docx", 'rb') as f:
