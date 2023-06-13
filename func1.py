@@ -249,12 +249,18 @@ def show(new_weeks):
                     st.markdown(f'<p style="color:#303030; font-size:25px;">RECOMMENDATION MESSAGES:</p>', unsafe_allow_html=True)
                     st.code(text, language="markdown")
 
-def predict(new_weeks, weekly):
+def predict(new_weeks, weekly, s3, bucket_name):
     '''Function that, given a dataset with new_weeks of training, returns the label for each one. '''
     try:
-        model = joblib.load('Model/Model.sav')
-        with open('Model/key.txt') as f:
-            features = [line.strip() for line in f]
+        response = s3.get_object(Bucket=bucket_name, Key=f"Model/{st.session_state.username}/Model.sav")
+        sav_file = response['Body'].read()
+        model = pickle.loads(sav_file)
+
+        response = s3.get_object(Bucket=bucket_name, Key=f"Model/{st.session_state.username}/key.txt")
+        lines = response['Body'].read().decode('utf-8').split('\n')
+        lines = list(filter(None, lines))
+        features = [line for line in lines]
+
         scaler = StandardScaler().fit(weekly[features].fillna(0))
         X = scaler.transform(new_weeks[features].fillna(0))
         result = model.predict(X)
