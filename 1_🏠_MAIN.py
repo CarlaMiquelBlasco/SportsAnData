@@ -187,6 +187,25 @@ def main():
                 weekly = pd.read_csv(StringIO(csv_contents2), index_col = 0).rename(columns={'Week.1': 'Week'})
                 last_modified_date = response1['LastModified'].strftime('%Y-%m-%d %H:%M:%S')
                 st.write(f"The date of the last modification of the data is {last_modified_date}")
+                
+                # Allow the user to download both datasets:
+                dt, we, pad = st.columns((1,1,3))
+                with dt:
+                    st.download_button(
+                    label=":page_facing_up: Cleaned data as CSV",
+                    help = "Press to download cleaned data as CSV",
+                    data=convert_df(data),
+                    file_name='data.csv',
+                    mime='text/csv',
+                    )
+                with we:
+                    st.download_button(
+                    label=":page_facing_up: Weekly data as CSV",
+                    help = "Press to download weekly data as CSV",
+                    data=convert_df(weekly),
+                    file_name='weekly.csv',
+                    mime='text/csv',
+                    )
 
             except:
                 error = "THERE IS NO DATA SAVED. IF YOU ARE A NEW USER YOU MUST UPLOAD YOUR OWN DATA THE FIRST TIME."
