@@ -26,7 +26,7 @@ def main():
     with st.sidebar:
         user = st.checkbox('NEW USER')
         username = login(s3, user)
-        #if not initialized
+        ## If not initialized
         if not user:
             logout = st.button("Log out")
             if logout:
@@ -34,10 +34,10 @@ def main():
                     del st.session_state[key]
             if 'username' not in st.session_state:
                 st.session_state.username = username
-            #if not stored
+            ## If not stored
             elif st.session_state.username == None:
                 st.session_state.username = username
-            #if stored
+            ## If stored
             if st.session_state.username != None:
                 st.markdown(f'<p style="text-align: left;color:#006400; font-size:15px; border-radius:2%;">Successfully Log in as {st.session_state.username}</p>', unsafe_allow_html=True)
     
@@ -57,6 +57,7 @@ def main():
                     ########################################################################
                     ######################### READ AND CLEAN THE DATA ######################
                     ########################################################################
+                    
 
         st.markdown(f'<p style="text-align: center; color:#303030; font-size:40px;">READ AND CLEAN THE DATA</p>', unsafe_allow_html=True)
         sb, mid, expl = st.columns((2,0.3,3))
@@ -92,16 +93,6 @@ def main():
                     data = read(uploadedFile, type)
                     data = clean(data, type)
                     data = remove_outliers_quartiles(data)
-                    #if type == 'Garmin Fenix S6':
-                    #    data = read_garmin_fenix_s6(uploadedFile)
-                    #    data = clean_garmin_fenix_s6(data)
-                    #elif type == 'Garmin Forerunner':
-                    #    data = read_forerunner(uploadedFile)
-                    #    data = clean_forerunner(data)
-                    #else:
-                    #    data = read_other(uploadedFile)
-                    #    data = clean_other(data)
-                    #    data = remove_outliers_quartiles(data)
                     with st.columns((1,2))[0]:
                         ok = "DATA READ CORRECTLY"
                         st.markdown(f'<p style="text-align: left; color:#006400; font-size:20px; border-radius:2%;">{ok}</p>', unsafe_allow_html=True)
@@ -137,7 +128,7 @@ def main():
                     st.markdown(f'<p style="text-align: left;color:#006400; font-size:15px; border-radius:2%;">{ok_bal2}</p>', unsafe_allow_html=True)
 
 
-                # Save both weekly and original datasets in AWS
+                ## Save both weekly and original datasets in AWS
                 object_key1 = f"Data/{st.session_state.username}/Data.csv"
                 object_key2 = f"Data/{st.session_state.username}/Weekly.csv"
 
@@ -149,7 +140,7 @@ def main():
                 weekly.to_csv(csv_buffer2, index = True)
                 s3.put_object(Bucket=bucket_name, Key=object_key2, Body=csv_buffer2.getvalue())
 
-                # Allow the user to download it:
+                ## Allow the user to download it:
                 dt, we, pad = st.columns((1,1,3))
                 with dt:
                     st.download_button(
@@ -171,7 +162,7 @@ def main():
 
         elif opt == 'SAVED DATA':
             try:
-                #FROM AWS:
+                ## FROM AWS:
                 s3 = boto3.client('s3', aws_access_key_id = os.environ.get('KEY_ID'),
                           aws_secret_access_key=os.environ.get('SECRET_KEY'))
                 k1 = f"Data/{st.session_state.username}/Data.csv"
@@ -182,13 +173,13 @@ def main():
                 response2 = s3.get_object(Bucket='fitnessapdata', Key=k2)
                 csv_contents2 = response2['Body'].read().decode('utf-8')
 
-                # Convert the CSV data into a Pandas DataFrame
+                ## Convert the CSV data into a Pandas DataFrame
                 data = pd.read_csv(StringIO(csv_contents1), index_col = 0)
                 weekly = pd.read_csv(StringIO(csv_contents2), index_col = 0).rename(columns={'Week.1': 'Week'})
                 last_modified_date = response1['LastModified'].strftime('%Y-%m-%d %H:%M:%S')
                 st.write(f"The date of the last modification of the data is {last_modified_date}")
                 
-                # Allow the user to download both datasets:
+                ## Allow the user to download both datasets:
                 dt, we, pad = st.columns((1,1,3))
                 with dt:
                     st.download_button(
