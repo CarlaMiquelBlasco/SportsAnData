@@ -250,8 +250,8 @@ def show(new_weeks):
                     st.code(text, language="markdown")
 
 def predict(new_weeks, weekly, s3, bucket_name):
-   # '''Function that, given a dataset with new_weeks of training, returns the label for each one. '''
-   # try:
+    '''Function that, given a dataset with new_weeks of training, returns the label for each one. '''
+    try:
         response = s3.get_object(Bucket=bucket_name, Key=f"Model/{st.session_state.username}/Model.sav")
         sav_file = response['Body'].read()
         model = pickle.loads(sav_file)
@@ -265,11 +265,11 @@ def predict(new_weeks, weekly, s3, bucket_name):
         X = scaler.transform(new_weeks[features].fillna(0))
         result = model.predict(X)
         new_weeks['Label'] = result
-   # except:
+    except:
         no_req = "THERE IS NOT ANY SAVED MODEL. YOU CAN SOLVE THIS BY SAVING THE MODEL IN THE PREVIOUS SECTION."
         st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#F5CDC9; color:#F01B06; font-size:15px; border-radius:2%;">{no_req}</p>', unsafe_allow_html=True)
 
-        return new_weeks, result
+    return new_weeks, result
 
 def search_prev(dy, weekly, data):
     '''Function that returns the dataset with the activities of the week of
