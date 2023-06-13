@@ -88,7 +88,7 @@ def main():
 
 
         if st.button('Done', help = "Press the button once you have filled the dataset with the new activities."):
-            #try:
+            try:
                 new_activities = clean2(new_activities)
                 df, new_weeks = perf_label(new_activities, data, weekly)
                 new_weeks, result = predict(new_weeks, weekly, s3, bucket_name)
@@ -106,7 +106,7 @@ def main():
 
                 st.session_state.weeks = new_weeks
                 st.session_state.act = df
-            #except:
+            except:
                 no_req = "THE DATA DOES NOT SATISFY THE REQUIREMENTS. MAKE SURE THAT ALL THE VALUES STISFY THE METRICS SPECIFIED AND THAT THERE IS NOT ANY NULL VALUE."
                 st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#F5CDC9; color:#F01B06; font-size:15px; border-radius:2%;">{no_req}</p>', unsafe_allow_html=True)
 
