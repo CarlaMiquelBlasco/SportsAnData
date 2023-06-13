@@ -2,12 +2,12 @@ from config import *
 
 
 def clean2(data):
-  '''Function that given the raw dataset from GARMIN APP, cleans it'''
+  """Function that given the raw dataset from GARMIN APP, cleans it."""
 
-  # From str to datetime
+  ## From str to datetime
   data['Date'] = pd.to_datetime(data['Date']).dt.date
 
-  #To Floats
+  ## To Floats
   floats = ['Distance', 'Calories', 'AverageHeartRate', 'MaximumHeartRate', \
             'TotalAscent', 'TotalDescent', 'AverageSpeed', 'MaximumSpeed', \
             'AveragePower', 'Difficulty', 'MinimumTemperature', \
@@ -23,7 +23,7 @@ def clean2(data):
 
 
 def get_performance(mu,sigma,min,max):
-  '''Function that, given a mu and sigma, returns a number between min and max that follows a gausian distribution'''
+  """Function that, given a mu and sigma, returns a number between min and max that follows a gausian distribution."""
 
   perfo = random.gauss(mu, sigma)
   i = 0
@@ -34,9 +34,9 @@ def get_performance(mu,sigma,min,max):
   return float(perfo)
 
 def performance(df, data, separator):
-  '''Function that, given a separator (indicates which parameters are used to
+  """Function that, given a separator (indicates which parameters are used to
   infer the performance for each activity type) and dataset, returns the dataset
-  with the performance infered for each activity'''
+  with the performance infered for each activity."""
 
   min = 1
   max = 10
@@ -74,6 +74,8 @@ def performance(df, data, separator):
   return df.reset_index(drop = True)
 
 def group_by_weeks(data):
+  """Function that given a dataset, returns it grouped by weeks."""
+  
   res = data.copy()
   res = res.fillna(0)
   res['Date'] = pd.to_datetime(res['Date'])
@@ -88,12 +90,12 @@ def group_by_weeks(data):
   res['Week'] = res['Week'].dt.date
   res = res.groupby('Week').mean()
 
-  #Add extra features to data
+  ## Add extra features to data
   res['Count'] = count['ActivityType']
   res['Week'] = pd.to_datetime(res.index)
   res['Month'] = res.Week.dt.month
   res['Year'] = res.Week.dt.year
-  #Add number of aactivitytypes per week:
+  ## Add number of aactivitytypes per week:
   counts = pd.DataFrame(counts.groupby(['Week', 'ActivityType']).size()).reset_index().rename(columns = { 0:'Counts'})
   activities = ['Running', 'Road biking', 'Mountain biking', 'Weight training', 'Spinning']
   for act in activities:
@@ -105,6 +107,8 @@ def group_by_weeks(data):
   return res
 
 def perf_label(df, data, weekly):
+  """Function that infers the performance value for each activity regostered."""
+  
   separator = {'Mountain biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'Calories', 'MaximumAltitude'],
               'Road biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'AveragePower', 'Calories', 'MaximumAltitude'],
               'Spinning': ['ElapsedTime', 'AverageHeartRate', 'AveragePower', 'Calories'],
@@ -117,20 +121,20 @@ def perf_label(df, data, weekly):
   return df, new_weeks
 
 def recomendation(new_weeks, weekly, data, result):
-  '''Given a dataset, and a weekly training routine,
-  saves the recomensation messages in the weekly dataset.'''
+  """Given a dataset, and a weekly training routine,
+  saves the recomensation messages in the weekly dataset."""
 
-  # Save the activities corresponding to the positive, negative and maintenance weeks
+  ## Save the activities corresponding to the positive, negative and maintenance weeks
   positive = data[data['Week'].isin(np.array(weekly[weekly['Label'] == 'Positive'].Week))]
   negative = data[data['Week'].isin(np.array(weekly[weekly['Label'] == 'Negative'].Week))]
   maintenance = data[data['Week'].isin(np.array(weekly[weekly['Label'] == 'Maintenance'].Week))]
 
-  # Save the Pos/Neg/Maint weeks
+  ## Save the Pos/Neg/Maint weeks
   pos_week = weekly[weekly['Label'] == 'Positive']
   neg_week = weekly[weekly['Label'] == 'Negative']
   main_week = weekly[weekly['Label'] == 'Maintenance']
 
-  # Save conditions
+  ## Save conditions
   c1 = ((new_weeks['Time'] > pos_week['Time'].mean() + 2*pos_week['Time'].std()) | \
       (new_weeks['ElapsedTime'] > pos_week['ElapsedTime'].mean() + 2*pos_week['ElapsedTime'].std()) | \
       (new_weeks['MovingTime'] > pos_week['MovingTime'].mean() + 2*pos_week['MovingTime'].std()))
@@ -151,7 +155,7 @@ def recomendation(new_weeks, weekly, data, result):
 
   c8 = (new_weeks['Label'] == 'Negative')
 
-  # Save message for each specific week
+  ## Save message for each specific week
   conditions = {'m1':c1, 'm2':c2, 'm3':c3, 'm4':c4, 'm5':c5, 'm6':c6, 'm7':c7, 'm8':c8}
   for m in conditions:
       new_weeks[m] = np.where(conditions[m], 1, 0)
@@ -159,6 +163,8 @@ def recomendation(new_weeks, weekly, data, result):
   return new_weeks
 
 def compare(weekly, new_weeks):
+    """Function that compares the performance of onw week with the performance of the following week."""
+    
     max = np.max(weekly['Performance'])
     now = new_weeks['Performance']
     new_weeks['Percentage'] = (now*100)/max
@@ -166,7 +172,7 @@ def compare(weekly, new_weeks):
 
 
 def gauge(perc):
-    '''Function that given a value shows a gauge chart.'''
+    """Function that given a value shows a gauge chart."""
 
     fig = go.Figure(go.Indicator(
     mode = "gauge+number",
@@ -192,10 +198,10 @@ def gauge(perc):
 
 
 def show(new_weeks):
-    ''' Function that, given new weeks of trainings, displays the results.'''
+    """ Function that, given new weeks of trainings, displays the results."""
 
     with st.columns([1, 3, 1])[1]:
-        # One tab for each new week.
+        ## One tab for each new week.
         if len(new_weeks.index) == 0:
             err = "The results of the selected week were not correctly stored because they were ambiguous and confusing the predictive model."
             st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#F5CDC9; color:#F01B06; font-size:20px; border-radius:2%;">{err}</p>', unsafe_allow_html=True)
@@ -207,10 +213,10 @@ def show(new_weeks):
                     lab = wk['Label']
                     perc = wk['Percentage']
 
-                    # Show the gauge chart:
+                    ## Show the gauge chart:
                     gau = gauge(perc)
 
-                    # Show the resulting label:
+                    ## Show the resulting label:
                     text =  ("THIS WEEK'S TRAINING ROUTINE HAS BEEN " + lab.upper() + "  \n ")
                     if lab == 'Positive':
                         st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#D8F1B5; color:#006400; font-size:20px; border-radius:2%;">{text}</p>', unsafe_allow_html=True)
@@ -219,7 +225,7 @@ def show(new_weeks):
                     else:
                         st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#F5E4C9; color:#FD9C02; font-size:20px; border-radius:2%;">{text}</p>', unsafe_allow_html=True)
 
-                    # Show the recommendation messages:
+                    ## Show the recommendation messages:
                     m1 = "You have trained too much minutes."
                     m2 = "You have done too much activities."
                     m3 = "You have done yoo much anaerobic minutes."
@@ -243,7 +249,8 @@ def show(new_weeks):
                     st.code(text, language="markdown")
 
 def predict(new_weeks, weekly, s3, bucket_name):
-    '''Function that, given a dataset with new_weeks of training, returns the label for each one. '''
+    """Function that, given a dataset with new_weeks of training, returns the label for each one. """
+    
     try:
         response = s3.get_object(Bucket=bucket_name, Key=f"Model/{st.session_state.username}/Model.sav")
         sav_file = response['Body'].read()
@@ -265,8 +272,8 @@ def predict(new_weeks, weekly, s3, bucket_name):
     return new_weeks, result
 
 def search_prev(dy, weekly, data):
-    '''Function that returns the dataset with the activities of the week of
-    the selected date and the corresponding week.'''
+    """Function that returns the dataset with the activities of the week of
+    the selected date and the corresponding week."""
 
     w = dy - pd.to_timedelta(dy.weekday() , unit='d')
     prev_weeks = weekly[weekly.index == str(w)]
@@ -276,13 +283,15 @@ def search_prev(dy, weekly, data):
 
 
 def save(data, weekly, new_weeks, df, username, s3, bucket_name):
+    """Function that saves to AWS the datasets."""
+    
     show(new_weeks)
     data = data.append(df)
     weekly = weekly.append(new_weeks)
     weekly = weekly.fillna(0)
     data = data.fillna(0)
 
-    #SAVE TO AWS:
+    ## SAVE TO AWS:
     object_key1 = f"Data/{username}/Data.csv"
     object_key2 = f"Data/{username}/Weekly.csv"
 
@@ -301,5 +310,7 @@ def save(data, weekly, new_weeks, df, username, s3, bucket_name):
             del st.session_state[key]
 
 def footnote_css(file_name):
+    """Function that allows to add the footnote to the application."""
+    
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
