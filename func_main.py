@@ -2,6 +2,8 @@ from config import*
 
 
 def login(s3, user):
+    """Function that allows to log in into the application if the credentials are correct"""
+    
     response = s3.get_object(Bucket='fitnessapdata', Key="UserNames.csv")
     csv_contents = response['Body'].read().decode('utf-8')
     existing_users = pd.read_csv(StringIO(csv_contents), index_col = 0)
@@ -19,7 +21,7 @@ def login(s3, user):
                 return username
 
     else:
-        # Ask for the user name
+        ## Ask for the user name
             username = st.text_input("WRITE A NEW USER NAME", "", help = "Write a User Name")
             pas1 = st.text_input("WRITE A PASSWORD", "", help = "Write a Password")
             pas2 = st.text_input("REPEAT THE PASSWORD", "", help = "Repeat the Password")
@@ -33,7 +35,7 @@ def login(s3, user):
                 else:
                     if username != "":
                         existing_users = existing_users.append({'UserName':username, 'Password': pas1}, ignore_index = True)
-                        # Save the user name AND PASWORD
+                        ## Save the user name AND PASWORD
                         csv_buffer = StringIO()
                         existing_users.to_csv(csv_buffer)
                         csv_data = csv_buffer.getvalue().encode('utf-8')
@@ -43,6 +45,8 @@ def login(s3, user):
 
 
 def read(data, type):
+    """Function that reads the data taking into account the format of each type of smart watch."""
+    
     if type == 'Garmin Fenix S6':
         colnames = ['ActivityType','Date','Favourite','Title','Distance','Calories','Time',
         'AverageHeartRate','MaximumHeartRate','AerobicTrainingEffect','AverageRunningCadence',
@@ -90,7 +94,7 @@ def read(data, type):
 
 
 def clean(data, type):
-  '''Function that given the raw dataset from GARMIN APP, cleans it'''
+  """Function that given the raw dataset from specific type of smart watch, cleans it."""
 
   ## General variables
   floats = ['Distance', 'Calories', 'AverageHeartRate', 'MaximumHeartRate', \
@@ -105,26 +109,26 @@ def clean(data, type):
   if type == 'Garmin Fenix S6':
       data = data.replace('"--"','"NaN"')
 
-      #Make all values equal in order to clean them a posteriori (add "")
+      ## Make all values equal in order to clean them a posteriori (add "")
       not_str = ['Calories', 'Distance', 'TotalAscent', \
                 'TotalDescent', 'MinimumAltitude', 'MaximumAltitude', 'Date']
       for var in not_str:
         data.loc[data[var].str[0] != '"', var] = ('"'+data[var]+'"')
 
-      #To str without ""
+      ## To str without ""
       data["Title"] = (data['Title'].astype('str')).str[1:-1]
       data['Date'] = pd.to_datetime((data[var].astype('str')).str[1:-1])
 
-      #To Floats
+      ## To Floats
       for var in floats:
         data[var] = ((data[var].astype('str')).str[1:-1]).astype('float')
 
-      #To minutes (not datetime)
+      ## To minutes (not datetime)
       for var in to_minutes:
         data[var] = ((data[var].astype('str')).str[1:3]).astype('int')*60 + \
         ((data[var].astype('str')).str[4:6]).astype('int')
 
-      #from pace (min/km) to speed (km/h)
+      ## From pace (min/km) to speed (km/h)
       for pace in to_speed:
         cond1 = ((data[pace].str.contains(':')) & (data[pace].str.len() >= 7 ))
         cond2 = ((data[pace].str.contains(':')) & (data[pace].str.len() < 7 ))
@@ -137,9 +141,9 @@ def clean(data, type):
         data.loc[cond1, pace] = speed1
         data.loc[cond2, pace] = speed2
 
-        #from str to float
+        ## From str to float
         data[pace] = ((data[pace].astype('str')).str[1:-1]).astype('float')
-        #From spanish to English
+        ## From spanish to English
       data['ActivityType'] = data['ActivityType'].replace([\
                             'Ciclismo en ruta','Ciclismo de montaña', 'Ciclismo',\
                             'Ciclismo en sala', 'Entreno de fuerza', 'Carrera', \
@@ -149,7 +153,7 @@ def clean(data, type):
                               'Spinning','Weight training', 'Running',\
                               'Athletic Walking', 'Alpinism', 'Swimming','Hike', 'Walk'])
 
-        # Delete usless columns:
+        ## Delete usless columns:
       data = data.drop(['AverageRunningCadence', 'MaximumRunningCadence',
                         'AverageStrideLength', 'AverageVerticalRatio',
                         'AverageVerticalOscillation', 'AverageGroundContactTime',
@@ -185,11 +189,11 @@ def clean(data, type):
 
           data.loc[cond1, pace] = speed1
           data.loc[cond2, pace] = speed2
-          #from str to float
+          ## From str to float
           data[pace] = ((data[pace].astype('str')).str[1:-1]).astype('float')
       data['Date'] = pd.to_datetime(data['Date'])
 
-            #From spanish to English:
+            ## From spanish to English:
       data['ActivityType'] = data['ActivityType'].replace([\
                                 'Ciclismo en ruta','Ciclismo de montaña', 'Ciclismo',\
                                 'Ciclismo en sala', 'Entreno de fuerza', 'Carrera', \
@@ -226,7 +230,7 @@ def clean(data, type):
 
 
 def remove_outliers_quartiles(data):
-  '''Function that removes outliers using quartiles method'''
+  """Function that removes outliers using quartiles method."""
 
   separator = {'Mountain biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'Calories', 'MaximumAltitude'],
               'Road biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'AveragePower', 'Calories', 'MaximumAltitude'],
@@ -247,7 +251,7 @@ def remove_outliers_quartiles(data):
 
 
 def get_performance(mu,sigma,min,max):
-  '''Function that, given a mu and sigma, returns a number between min and max that follows a gausian distribution'''
+  """Function that, given a mu and sigma, returns a number between min and max that follows a gausian distribution."""
 
   perfo = random.gauss(mu, sigma)
   i = 0
@@ -259,9 +263,9 @@ def get_performance(mu,sigma,min,max):
 
 
 def performance(data, separator):
-  '''Function that, given a separator (indicates which parameters are used to
+  """Function that, given a separator (indicates which parameters are used to
   infer the performance for each activity type) and dataset, returns the dataset
-  with the performance infered for each activity'''
+  with the performance infered for each activity."""
 
   min = 1
   max = 10
@@ -296,10 +300,10 @@ def performance(data, separator):
 
 
 
-#GROUP BY WEEKS & LABEL THE GROUPED DATA
 def group_by_weeks(data):
-    '''Function that given a datetime dataset, returns the same dataset grouped by weeks.
-    It also adds extra features to the original dataset.'''
+    """Function that given a datetime dataset, returns the same dataset grouped by weeks.
+    It also adds extra features to the original dataset."""
+    
     res = data.copy()
     data = data.fillna(0)
     data['day-of-week'] = data['Date'].dt.day_name()
@@ -310,20 +314,20 @@ def group_by_weeks(data):
         i = i+1
         data['Week'] = pd.to_datetime(pd.to_datetime(data['Week']).dt.date)
 
-  #Create the weekly grouped dataset:
+  ## Create the weekly grouped dataset:
     weekly = data.copy()
     count = weekly.groupby('Week').count()
     counts = weekly.copy()
     weekly = weekly.drop(['ActivityType', 'Date', 'Title', 'day-of-week'], axis = 1).groupby('Week').mean()
     weekly = weekly.groupby('Week').mean()
 
-  #Add extra features to weekly grouped data
+  ## Add extra features to weekly grouped data
     weekly['Count'] = count['ActivityType']
     weekly['Week'] = weekly.index
     weekly['Month'] = weekly.Week.dt.month
     weekly['Year'] = weekly.Week.dt.year
 
-  #Add number of aactivitytypes per week:
+  ## Add number of aactivitytypes per week:
     counts = pd.DataFrame(counts.groupby(['Week', 'ActivityType']).size()).reset_index().rename(columns = { 0:'Counts'})
     activities = data['ActivityType'].unique()
     for act in activities:
@@ -335,6 +339,8 @@ def group_by_weeks(data):
     return weekly, data
 
 def label(weekly):
+  """ Function that given a weekly grouped dataset, it labels each week as positive, negative or naintenance training routine."""
+
   weekly['Label'] = 'to_fill'
   for i in range(len(weekly)-1):
     next = weekly['Performance'].iloc[i+1]
@@ -344,12 +350,14 @@ def label(weekly):
       weekly['Label'].iloc[i] = 'Positive'
     else:
       weekly['Label'].iloc[i] = 'Negative'
-  #Remove last row since we cannot compare it to nothing
+  ## Remove last row since we cannot compare it to nothing
   weekly = weekly.iloc[: len(weekly)-1, :]
   return weekly
 
 @st.cache_data(show_spinner=False)
 def perf_label(data, weeklyavg):
+  """Function that infers the performance value ofor each activity registered. Then, it groups it by weeks and label each week."""
+
   separator = {'Mountain biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'Calories', 'MaximumAltitude'],
               'Road biking': ['Distance', 'ElapsedTime', 'AverageHeartRate', 'AverageSpeed', 'TotalAscent', 'MovingTime', 'AveragePower', 'Calories', 'MaximumAltitude'],
               'Spinning': ['ElapsedTime', 'AverageHeartRate', 'AveragePower', 'Calories'],
@@ -361,54 +369,56 @@ def perf_label(data, weeklyavg):
 
 
   for i in range(5):
-    #performance is the average of 20 times
+    ## Performance is the average of 20 times
     data = performance(data, separator)
 
-    #each time the performance is different in the groupby
+    ## Each time the performance is different in the groupby
     weeklyavg, data = group_by_weeks(data)
     weekly = label(weeklyavg)
     check1.iloc[:,i] = weekly['Label']
 
     check2.iloc[:,i] = data['Performance']
 
-  #update the performance of original data with avg of each execution
+  ## Update the performance of original data with avg of each execution
   check2['Performance'] = check2.mean(axis = 1)
   data['Performance'] = check2['Performance']
   #also update it in the goruped data
   weeklyavg, data = group_by_weeks(data)
 
-  #Count the number of each result for each week.
+  ## Count the number of each result for each week.
   check1['Pos'] = check1[check1 == 'Positive'].count(axis=1)
   check1['Neg'] = check1[check1 == 'Negative'].count(axis=1)
   check1['Maint'] = check1[check1 == 'Maintenance'].count(axis=1)
 
-  #Label according to the discrepancies
+  ## Label according to the discrepancies
   check1.loc[(check1['Pos']>1) & (check1['Neg']>1),'Label'] = 'Ambiguous'
   check1.loc[(check1['Pos']>check1['Maint']) & (check1['Neg']<=1),'Label'] = 'Positive'
   check1.loc[(check1['Neg']>check1['Maint']) & (check1['Pos']<=1),'Label'] = 'Negative'
   check1.loc[(check1['Maint']>=check1['Neg']) & (check1['Maint']>=check1['Pos']),'Label'] = 'Maintenance'
 
-  #Add the final label to the weekly dataset
+  ## Add the final label to the weekly dataset
   weeklyavg['Label'] = check1['Label']
 
-  #Delete rows that are ambiguous
+  ## Delete rows that are ambiguous
   ambiguous = weeklyavg[weeklyavg.Label == 'Ambiguous']
   weeklyavg = weeklyavg.drop(weeklyavg[weeklyavg.Label == 'Ambiguous'].index)
 
 
-  #return the resulting datasets
+  ## return the resulting datasets
   return data, weeklyavg
 
 
 def check(weekly):
+    """Function that given a weekly grouped dataset already labeled, returns if it is balanced or not."""
+    
     class_counts = weekly['Label'].value_counts()
-    # Compute the ratio of the smallest class to the largest class
+    ## Compute the ratio of the smallest class to the largest class
     class_ratios = [class_counts.min() / class_counts.max(), class_counts.max() / class_counts.min()]
 
-    # Define the range of acceptable ratios
+    ## Define the range of acceptable ratios
     acceptable_range = [0.5, 1.3]
 
-    # Check if the ratio falls within the acceptable range
+    ## Check if the ratio falls within the acceptable range
     if (class_ratios[0] >= acceptable_range[0] and class_ratios[1] <= acceptable_range[1]):
         return True
     return False
@@ -416,10 +426,12 @@ def check(weekly):
 
 
 def get_gen(weekly):
+    """ Function that given an unbalanced labeled dataset, returns a dictionary specifying how many data we need to generate in order to balanced it."""
+    
     my_dict = dict(weekly['Label'].value_counts())
     min_keys = sorted(my_dict, key=my_dict.get)[:2]
     max_value = np.max(list(my_dict.values()))
-    # Dictonaru that has each label and how many registers to generate for each
+    ## Dictonary that has each label and how many registers to generate for each
     result_dict = {key: max_value - value for key, value in my_dict.items() if key in min_keys}
     return result_dict
 
@@ -427,9 +439,11 @@ def get_gen(weekly):
 
 
 def generate_row(data, lab, act, date):
+  """Function that generates data that follows the distribution of the weeks specified."""
+
   dif = ['AverageHeartRate', 'MaximumHeartRate', 'MinimumTemperature', 'MaximumTemperature', 'MinimumAltitude', 'MaximumAltitude']
   if lab == 'Positive':
-    #positive weeks
+    ## Positive weeks
     new_row =  {'ActivityType':act, 'Date': date, 'Title': act + " activity"}
     for col in data.columns:
      if col in ['ActivityType','Date', 'Title']:
@@ -440,7 +454,7 @@ def generate_row(data, lab, act, date):
        new_row[col] = random.uniform(np.min(data.loc[data['ActivityType'] == act, col]), np.mean(data.loc[data['ActivityType'] == act, col]))
 
   elif lab == 'Negative':
-    #negative weeks
+    ## Negative weeks
     new_row =  {'ActivityType':act, 'Date': date, 'Title': act + " activity"}
     for col in data.columns:
      if col in ['ActivityType','Date', 'Title']:
@@ -451,7 +465,7 @@ def generate_row(data, lab, act, date):
        new_row[col] = random.uniform(np.mean(data.loc[data['ActivityType'] == act, col]), np.max(data.loc[data['ActivityType'] == act, col]))
 
   else:
-      # Maintenance weeks:
+      ## Maintenance weeks:
     new_row =  {'ActivityType':act, 'Date': date, 'Title': act + " activity"}
     return
     for col in data.columns:
@@ -464,38 +478,40 @@ def generate_row(data, lab, act, date):
 
 
 def generate(data, result_dict):
-  # Labels that need to be generated
+  """Function that generates the amount of data specified by the dictionary in order to balance the labeled dataset."""
+
+  ## Labels that need to be generated
   g1, g2 = list(result_dict.keys())
 
-  # Dict with labels that need tot be generated and the already generated
+  ## Dict with labels that need tot be generated and the already generated
   done = dict.fromkeys(list(result_dict.keys()), 0)
 
-  # Defining the dates.
+  ## Defining the dates.
   data['Date'] = pd.to_datetime(data['Date'])
   #Make sure each week is generated within the same week. Make sure it is a Sat.
   date = np.min(data.Date)-dt.timedelta(days=7)
   date = date + dt.timedelta(days=5) - dt.timedelta(days=date.day_of_week)
 
 
-  # Initualize the new dataframe
+  ## Initualize the new dataframe
   df = pd.DataFrame(columns = data.columns)
 
-  # Start generating
+  ## Start generating
   while done[g1] < result_dict[g1] or done[g2] < result_dict[g2]:
-    # Generate weeks of g1 or g2 randomly. lab == 1 --> generate for g1
+    ## Generate weeks of g1 or g2 randomly. lab == 1 --> generate for g1
     lab = random.randint(1,2)
     act = random.choice(data['ActivityType'].unique())
-    # If we have already generated all needed weeks for g1, or lab == 2, then we generate for g2
+    ## If we have already generated all needed weeks for g1, or lab == 2, then we generate for g2
     if done[g1] == result_dict[g1] or lab == 2:
       done[g2] = done[g2] + 1
-      #generate weeks for g2
+      ## Generate weeks for g2
       for i in range(3):
         act = random.choice(data['ActivityType'].unique())
         new_row = generate_row(data, g2, act, date-dt.timedelta(days=2*i))
         df = df.append(new_row, ignore_index=True)
     else:
       done[g1] = done[g1] + 1
-  #    #generate weeks for g1
+      ## Generate weeks for g1
       for i in range(3):
         act = random.choice(data['ActivityType'].unique())
         new_row = generate_row(data, g1, act, date-dt.timedelta(days=2*i))
@@ -505,12 +521,14 @@ def generate(data, result_dict):
 
 @st.cache_data(show_spinner="Balancing the dataset...")
 def balance(weekly, data, _feat):
+    """Function that balances the weekly grouped and labeled dataset. It generates data until it is balanced."""
+    
     gen = get_gen(weekly)
     df = generate(data[_feat], gen)
-    # Append generated weeks to the original dataset
+    ## Append generated weeks to the original dataset
     data = data.append(df, ignore_index=True)
 
-    # Check if now is balanced
+    ## Check if now is balanced
     weekly, data = group_by_weeks(data)
     data, weekly = perf_label(data, weekly)
     bal = check(weekly, )
@@ -520,6 +538,8 @@ def balance(weekly, data, _feat):
 
 
 def reduced_model(model, features, weeklyavg, importance):
+  """Function that given a model, trains the same model but only with the 10 most important features."""
+
   aux = {}
   j = 0
   for coef in importance:
@@ -535,18 +555,18 @@ def reduced_model(model, features, weeklyavg, importance):
 
 
 def train(weekly):
-  '''Given a weekly grouped dataset, the function trains 6 classificators and
-  returns a list with the accuracy metrics for each one.'''
+ """'Given a weekly grouped dataset, the function trains 6 classificators and
+  returns a list with the accuracy metrics for each one."""
 
   X = weekly.drop(["Label", 'Week'],1)   # Feature Matrix
   y = weekly["Label"]          # Target Variable
 
-  # Create training and test split
+  ## Create training and test split
   features = X.columns
   X = StandardScaler().fit_transform(X)
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=1, stratify=y)
 
-  # Model pipeline
+  ## Model pipeline
   model_pipeline = []
   model_pipeline.append(LogisticRegression(solver='liblinear'))
   model_pipeline.append(SVC())
@@ -555,7 +575,7 @@ def train(weekly):
   model_pipeline.append(RandomForestClassifier())
   model_pipeline.append(GaussianNB())
 
-  # Model Evaluation
+  ## Model Evaluation
   model_list = ['Logistic Regression', 'SVM', 'KNN', 'Decision Tree', 'Random Forest', 'Naive Bayes']
   acc_list = []
   cm_list = []
@@ -583,20 +603,20 @@ def train(weekly):
 
     i = i+1
 
-    #Preduction with all the features
+    ## Preduction with all the features
     y_pred = model.predict(X_test)
 
-    #Prediction with the 10 most important features
+    ## Prediction with the 10 most important features
     model2, X_train2, X_test2, y_train2, y_test2, keylist = reduced_model(model, features, weekly, importance)
     y_pred2 = model2.predict(X_test2)
 
-    #Append the result to the lists
+    ## Append the result to the lists
     acc_list.append(accuracy_score(y_test, y_pred))
     cm_list.append(confusion_matrix(y_test, y_pred))
     acc_list2.append(accuracy_score(y_test2, y_pred2))
     cm_list2.append(confusion_matrix(y_test2, y_pred2))
 
-    #Save the best model:
+    ## Save the best model:
     if accuracy_score(y_test2, y_pred2) > max[0] and recall_score(y_test2, y_pred2, average='macro') > max[1]:
       max[0] = accuracy_score(y_test2, y_pred2)
       max[1] = recall_score(y_test2, y_pred2, average='macro')
@@ -608,6 +628,8 @@ def train(weekly):
 
 
 def find_model(weekly, acc, rec, ti):
+    """Function that given a weekly grouped and labeled dataset, tries to find the optimal model."""
+    
     ret = [0, 0]
     timeout = Time.time() + 60*ti
     while acc > ret[0] or rec > ret[1]:
@@ -617,6 +639,8 @@ def find_model(weekly, acc, rec, ti):
     return ret, df, model, X_train, X_test, y_train, y_test, keylist, y_pred, True
 
 def save(model, X_train, X_test, y_train, y_test, keylist, y_pred, weekly, data, s3, bucket_name, username):
+    """Function that saves the model and its metrics for further use."""
+    
     s3.put_object(Bucket=bucket_name, Key=f"Model/{username}/Model.sav", Body=pickle.dumps(model))
     s3.put_object(Bucket=bucket_name, Key=f"Model/{username}/X_train.npy", Body= pickle.dumps(X_train))
     s3.put_object(Bucket=bucket_name, Key=f"Model/{username}/X_test.npy", Body= pickle.dumps(X_test))
@@ -635,7 +659,9 @@ def save(model, X_train, X_test, y_train, y_test, keylist, y_pred, weekly, data,
 
 
 def metrics(weekly, model, X_train, X_test, y_train, y_test, keylist, y_pred):
-    # METRICS
+    """Function that evaluates the metrics of the model found."""
+    
+    ## METRICS
     mod1 = "MODEL FOUND: " + (str(model)[:-2])
     mod2 = (str(model)[:-2])
     st.markdown(f'<p style="text-align: center; padding: 10px; background-color:#D8F1B5; color:#006400; font-size:20px; border-radius:2%;">{mod1}</p>', unsafe_allow_html=True)
@@ -645,13 +671,13 @@ def metrics(weekly, model, X_train, X_test, y_train, y_test, keylist, y_pred):
     res2['Accuracy'] = res1.iloc[3, 1]
 
 
-    # CONFUSION MATRIX
+    ## CONFUSION MATRIX
     labels = ['Positive', 'Negative', 'Maintenance']
     cm = confusion_matrix(y_test, y_pred, labels=labels)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=labels)
     cm_df = pd.DataFrame(disp.confusion_matrix, index=disp.display_labels, columns=disp.display_labels)
 
-    # Convert the DataFrame to long format for Altair
+    ## Convert the DataFrame to long format for Altair
     cm_df_long = cm_df.stack().reset_index()
     cm_df_long.columns = ['true_label', 'predicted_label', 'count']
 
@@ -674,15 +700,20 @@ def metrics(weekly, model, X_train, X_test, y_train, y_test, keylist, y_pred):
 
 
 def create_download_link(data, filename):
+    """ Function that allows to download the filename from the application."""
+    
     b64 = base64.b64encode(data).decode()
     href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{filename}">Download {filename}</a>'
     return href
 
 @st.cache_data
 def convert_df(df):
-    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    """Function that enocdes a csv file."""
+    
     return df.to_csv().encode('utf-8')
 
 def footnote_css(file_name):
+    """Function for adding the footnote in the application."""
+    
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
