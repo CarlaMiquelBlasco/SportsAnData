@@ -147,18 +147,12 @@ def recomendation(new_weeks, weekly, data, result):
 
   c6 = new_weeks['AverageHeartRate'] < pos_week['AverageHeartRate'].mean() - pos_week['AverageHeartRate'].std()
 
-  c7 = ((new_weeks['Road biking']/new_weeks['Count'] > 0.7) | \
-      (new_weeks['Mountain biking']/new_weeks['Count']  > 0.7) | \
-      (new_weeks['Spinning']/new_weeks['Count']  > 0.7) | \
-        (new_weeks['Weight training']/new_weeks['Count']  > 0.7) | \
-        (new_weeks['Running']/new_weeks['Count']  > 0.7))
+  c7 = new_weeks['TotalAscent'] < pos_week['TotalAscent'].mean() - pos_week['TotalAscent'].std()
 
-  c8 = new_weeks['TotalAscent'] < pos_week['TotalAscent'].mean() - pos_week['TotalAscent'].std()
-
-  c9 = (new_weeks['Label'] == 'Negative')
+  c8 = (new_weeks['Label'] == 'Negative')
 
   # Save message for each specific week
-  conditions = {'m1':c1, 'm2':c2, 'm3':c3, 'm4':c4, 'm5':c5, 'm6':c6, 'm7':c7, 'm8':c8, 'm9':c9}
+  conditions = {'m1':c1, 'm2':c2, 'm3':c3, 'm4':c4, 'm5':c5, 'm6':c6, 'm7':c7, 'm8':c8}
   for m in conditions:
       new_weeks[m] = np.where(conditions[m], 1, 0)
 
@@ -232,10 +226,9 @@ def show(new_weeks):
                     m4 = "You should try to do longer activities."
                     m5 = "You should try to train more days."
                     m6 = "You should try to do more anaerobic activities."
-                    m7 = "You should try different activity types."
-                    m8 = "It may be a good idea to train by accumulating more positive elevation gain."
-                    m9 = "Unlucky your performance will probably descrease. Try to change your training routine."
-                    messages = {'m1':m1, 'm2':m2, 'm3':m3, 'm4':m4, 'm5':m5, 'm6':m6, 'm7':m7, 'm8':m8, 'm9':m9}
+                    m7 = "It may be a good idea to train by accumulating more positive elevation gain."
+                    m8 = "Unlucky your performance will probably descrease. Try to change your training routine."
+                    messages = {'m1':m1, 'm2':m2, 'm3':m3, 'm4':m4, 'm5':m5, 'm6':m6, 'm7':m7, 'm8':m8}
 
                     text = ""
                     i = 0
