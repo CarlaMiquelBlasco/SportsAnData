@@ -43,13 +43,14 @@ def main2():
         ##########################################################################
         ########################### READ AND CLEAN THE DATA ####################
         #########################################################################
+        
 
-        # Read the data and clean it for the visualitzations:
+        ## Read the data and clean it for the visualitzations:
         try:
             data, weekly = read(st.session_state.username, s3)
             data = clean3(data)
 
-            # Add filter for all visualitzations
+            ## Add filter for all visualitzations
             st.sidebar.markdown("<h1 style='text-align: center; font-size:20px; '>FILTER FOR ALL PLOTS</h1>", unsafe_allow_html=True)
             start_date = st.sidebar.date_input('START DATE', data['Date'].min())
             end_date = st.sidebar.date_input('END DATE', data['Date'].max())
@@ -62,7 +63,6 @@ def main2():
             title("PERFORMANCE EVOLUTION")
             chart, MID, expl = st.columns((2, 1, 2))
             with chart:
-                    #with st.columns((1, 6, 0.1))[1]:
                 year = st.radio('Select a year',list(data['Date'].dt.year.unique()), help = "Select a year for the following chart", label_visibility = "collapsed")
                 st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
                 chart1 = perf_evol(data, year)
@@ -99,6 +99,7 @@ def main2():
             ##########################################################################
             ########################### COUNT OF ACTIVITIES #########################
             #########################################################################
+            
 
 
             st.write('')
@@ -130,6 +131,7 @@ def main2():
             ##########################################################################
             ######################## NUMERICAL X ACTIVITY TYPE ######################
             #########################################################################
+            
 
 
             title("SUMMARY OF NUMERICAL FEATURES")
@@ -159,6 +161,7 @@ def main2():
             #########################################################################
             ############################### CORRELATION #############################
             #########################################################################
+            
 
             title("CORRELATION ANALYSIS")
             sc, mid, hm = st.columns((3, 0.5, 1.8))
