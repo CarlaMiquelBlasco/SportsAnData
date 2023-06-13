@@ -258,7 +258,7 @@ def main():
                     st.session_state.keylist = keylist
                     st.session_state.y_pred = y_pred
             except:
-                error = "THERE IS NO ENOUGH DATA SAVED. MAKE SURE THAT YOU HAVE UPLOADED THE DATA."
+                error = "THERE IS NO ENOUGH DATA SAVED. MAKE SURE THAT YOU HAVE UPLOADED A .CSV WITH AT LEAST 150 ACTIVITIES."
                 st.markdown(f'<p style="text-align: center; padding: 20px; background-color:#F5CDC9; color:#F01B06; font-size:15px; border-radius:2%;">{error}</p>', unsafe_allow_html=True)
 
 
