@@ -1,6 +1,8 @@
 from config import*
 
 def read(username, s3):
+    """Function that reads both the dataset and the weekly dataset."""
+    
     k1 = f"Data/{username}/Data.csv"
     k2 = f"Data/{username}/Weekly.csv"
 
@@ -9,24 +11,26 @@ def read(username, s3):
     response2 = s3.get_object(Bucket='fitnessapdata', Key=k2)
     csv_contents2 = response2['Body'].read().decode('utf-8')
 
-    # Convert the CSV data into a Pandas DataFrame
+    ## Convert the CSV data into a Pandas DataFrame
     data = pd.read_csv(StringIO(csv_contents1))
     weekly = pd.read_csv(StringIO(csv_contents2), index_col = 0).rename(columns={'Week.1': 'Week'})
     return data, weekly
 
 def clean3(data):
-  '''Function that given the raw dataset from GARMIN APP, cleans it'''
+  """Function that given the raw dataset from GARMIN APP, cleans it."""
 
-  # From str to datetime
+  ## From str to datetime
   data['Date'] = pd.to_datetime(data['Date'])
 
-  # New usefull features for the visualitzations:
+  ## New usefull features for the visualitzations:
   data['Year'] = pd.to_datetime(data['Date']).dt.year
   data['Month'] = pd.to_datetime(data['Date']).dt.month
   data['MonthName'] = data['Date'].dt.month_name()
   return data
 
 def perf_evol(data, year):
+    """Function that plots the evolution of the performance over years."""
+    
     chart = alt.Chart(data[data['Year'] == year]).mark_line(
     point=alt.OverlayMarkDef(filled=False, fill="white")
     ).encode(
@@ -39,7 +43,9 @@ def perf_evol(data, year):
     return chart
 
 def count_activities(data):
-    # create a bar chart using Altair
+    """Function that plots the total count of activities per activity type."""
+    
+    ## Create a bar chart using Altair
     chart = alt.Chart(data).mark_bar().encode(
         y=alt.Y('count():Q', title = 'counts'),
         x=alt.X('ActivityType:N', sort=alt.EncodingSortField(field="count():Q", op = "count", order = "descending"), title = None)
@@ -50,6 +56,8 @@ def count_activities(data):
     return chart
 
 def count_act_month(data):
+    """Function that plots the count per month per activity type."""
+    
     counts = data.groupby(['MonthName', 'ActivityType']).size().reset_index(name='counts')
 
     chart = alt.Chart(counts).mark_bar().encode(
@@ -70,6 +78,8 @@ def count_act_month(data):
 
 
 def bar(data, var):
+    """Function that plots a bar chart with the amount of some numerical feature per activity type."""
+    
     counts = data.groupby('ActivityType').sum().reset_index()
     chart = alt.Chart(counts).mark_bar().encode(
     x=alt.X('ActivityType', title = None, sort=alt.EncodingSortField(field=var, order = "descending")),
@@ -81,6 +91,8 @@ def bar(data, var):
     return chart
 
 def count_num_month(data, var):
+    """Function that plots a bar chart with the amount of some numerical feature per activity type and per month."""
+    
     counts = data.groupby(['MonthName', 'ActivityType']).sum().reset_index()
 
     chart = alt.Chart(counts).mark_bar().encode(
@@ -100,6 +112,8 @@ def count_num_month(data, var):
     return chart
 
 def scater(data, var1, var2, act_types):
+    """Function that plots a scatterplot with var1 and var2 features."""
+    
     chart = alt.Chart(data).mark_circle(size=60).encode(
     x=alt.X(var1,axis=alt.Axis( tickSize=100, labelPadding=10)),
     y=alt.Y(var2,axis=alt.Axis( tickSize=100, labelPadding=10)),
@@ -115,6 +129,8 @@ def scater(data, var1, var2, act_types):
 
 
 def heat(data, var):
+    """Function that plots the heatmap of the input feature var."""
+    
     chart = alt.Chart(data).mark_rect().encode(
     y=alt.Y('month(Date):T',
     title = None),
@@ -125,6 +141,8 @@ def heat(data, var):
     return chart
 
 def box(data, var):
+    """Function that plots a boxplot with the numerical feature var and per activity type."""
+    
     chart = alt.Chart(data).mark_boxplot(extent='min-max').encode(
     x=alt.X('ActivityType', title = None),
     y=var
@@ -134,6 +152,8 @@ def box(data, var):
     return chart
 
 def histogram(data, var):
+    """Function that plots an histogram of the numerical feature var."""
+    
     chart = alt.Chart(data).mark_bar().encode(
     x=alt.X(var, bin=alt.Bin(maxbins=50), title = var),
     y=alt.Y('count():Q', title = "counts"),
@@ -147,8 +167,12 @@ def histogram(data, var):
     return chart
 
 def title(txt):
+    """Function that allows to print the title of each chart with specific design."""
+    
     st.markdown(f'<p style="text-align: center; color:#303030; font-size:40px;">{txt}</p>', unsafe_allow_html=True)
 
 def footnote_css(file_name):
+    """Function that allows to add the footnote to the application."""
+    
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
