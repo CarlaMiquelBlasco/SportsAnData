@@ -91,7 +91,7 @@ def main():
             try:
                 new_activities = clean2(new_activities)
                 df, new_weeks = perf_label(new_activities, data, weekly)
-                new_weeks, result = predict(new_weeks, weekly)
+                new_weeks, result = predict(new_weeks, weekly, s3, bucket_name)
 
                 # Compare the performance with entire history:
                 new_weeks = compare(weekly, new_weeks)
