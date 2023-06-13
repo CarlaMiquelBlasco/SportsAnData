@@ -555,7 +555,7 @@ def reduced_model(model, features, weeklyavg, importance):
 
 
 def train(weekly):
- """'Given a weekly grouped dataset, the function trains 6 classificators and
+ """Given a weekly grouped dataset, the function trains 6 classificators and
   returns a list with the accuracy metrics for each one."""
 
   X = weekly.drop(["Label", 'Week'],1)   # Feature Matrix
