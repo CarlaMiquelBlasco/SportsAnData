@@ -28,7 +28,7 @@ def main():
     existing_users = pd.read_csv(StringIO(csv_contents), index_col = 0)
     set_bg_hack('Photos/backg.png')
 
-    # Define the tite:
+    ## Define the tite:
     st.write('-'*60)
     expl =  """THIS SECTION PRESENTS YOUR FITNESS PERCENTAGE, WHICH IS
     BASED ON YOUR LAST WEEK'S TRAINING COMPARED TO YOUR OVERALL FITNESS HISTORY.
@@ -55,6 +55,7 @@ def main():
         ############################################################################
         ##################### PREDICTION LABEL FOR NEW ACTIVITIES #################
         ###########################################################################
+        
 
         st.markdown("<h1 style='text-align: center; font-size:40px; color: black;'>NEW WEEKS</h1>", unsafe_allow_html=True)
         info = "MODIFY THE FOLLOWING DATASET ACCORDING TO THE ACTIVITIES YOU HAVE DONE DURING THE LAST WEEK. THEN PRESS THE BUTTON."
@@ -79,7 +80,7 @@ def main():
             response2 = s3.get_object(Bucket='fitnessapdata', Key=k2)
             csv_contents2 = response2['Body'].read().decode('utf-8')
 
-            # Convert the CSV data into a Pandas DataFrame
+            ## Convert the CSV data into a Pandas DataFrame
             data = pd.read_csv(StringIO(csv_contents1))
             weekly = pd.read_csv(StringIO(csv_contents2), index_col = 0).rename(columns={'Week.1': 'Week'})
         except:
@@ -93,15 +94,15 @@ def main():
                 df, new_weeks = perf_label(new_activities, data, weekly)
                 new_weeks, result = predict(new_weeks, weekly, s3, bucket_name)
 
-                # Compare the performance with entire history:
+                ## Compare the performance with entire history:
                 new_weeks = compare(weekly, new_weeks)
 
-                # recommendation messages
+                ## Recommendation messages
                 st.markdown(f'<p style="text-align: center; color:#303030; font-size:30px;">SUMMARY OF NEW WEEKS</p>', unsafe_allow_html=True)
                 st.write(new_weeks)
                 new_weeks = recomendation(new_weeks, weekly, data, result)
 
-                # Print the result: one tab for each week
+                ## Print the result: one tab for each week
                 show(new_weeks)
 
                 st.session_state.weeks = new_weeks
@@ -114,6 +115,7 @@ def main():
             ############################################################################
             ############################## SAVE THE RESULTS ###########################
             ###########################################################################
+            
 
         if st.button(":floppy_disk:", help = "APPEND THE NEW ACTIVITIES IN THE SAVED DATASET"):
             try:
@@ -127,12 +129,13 @@ def main():
             ############################################################################
             ############################## SHOW PREVIOUS RESULTS ######################
             ###########################################################################
+            
 
-        # Show results of previous weeks:
+        ## Show results of previous weeks:
         st.markdown("<h1 style='text-align: center; font-size:40px; color: black;'>OLD WEEKS</h1>", unsafe_allow_html=True)
         with st.expander("EXPAND TO SEE PREVIOUS WEEKS"):
             try:
-                # Read again just in case the user has appended new data:
+                ## Read again just in case the user has appended new data:
                 k1 = f"Data/{st.session_state.username}/Data.csv"
                 k2 = f"Data/{st.session_state.username}/Weekly.csv"
                 response1 = s3.get_object(Bucket='fitnessapdata', Key=k1)
@@ -141,19 +144,17 @@ def main():
                 csv_contents2 = response2['Body'].read().decode('utf-8')
                 data = pd.read_csv(StringIO(csv_contents1))
                 weekly = pd.read_csv(StringIO(csv_contents2), index_col = 0).rename(columns={'Week.1': 'Week'})
-                #st.write(data)
-                #st.write(weekly)
                 data['Date'] = pd.to_datetime(data['Date'])
                 dy = st.date_input('Select any date:', data['Date'].max(),\
                      min_value = data['Date'].min(), max_value = data['Date'].max(), label_visibility="collapsed")
                 prev_weeks, w = search_prev(dy, weekly, data)
 
-                # Show the activities of that week:
+                ## Show the activities of that week:
                 txt = 'THE ACTIVITIES OF THE SELECTED WEEK WERE THE FOLLOWING:'
                 st.markdown(f'<p style="text-align: center; padding: 20px; color:black; font-size:28px;">{txt}</p>', unsafe_allow_html=True)
                 data[(data['Date'].dt.date >= w) & (data['Date'].dt.date <= w + pd.to_timedelta(6 , unit='d'))]
 
-                # Show the results of that week:
+                ## Show the results of that week:
                 txt = 'THE RESULTS OF THE SELECTED WEEK WERE THE FOLLOWING:'
                 st.markdown(f'<p style="text-align: center; padding: 20px; color:black; font-size:28px;">{txt}</p>', unsafe_allow_html=True)
                 show(prev_weeks)
