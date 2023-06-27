@@ -228,7 +228,7 @@ def show(new_weeks):
                     ## Show the recommendation messages:
                     m1 = "You have trained too much minutes."
                     m2 = "You have done too much activities."
-                    m3 = "You have done yoo much anaerobic minutes."
+                    m3 = "You have done too much anaerobic minutes."
                     m4 = "You should try to do longer activities."
                     m5 = "You should try to train more days."
                     m6 = "You should try to do more anaerobic activities."
